@@ -1,0 +1,11 @@
+syntax = "proto3";
+package determinism.observatory.v1;
+
+message EventEnvelope {
+  string run_id = 1;
+  uint64 seq = 2;
+  string source_service = 3;
+  string event_type = 4;
+  string payload_json = 5;
+}
+service EventIngest {}

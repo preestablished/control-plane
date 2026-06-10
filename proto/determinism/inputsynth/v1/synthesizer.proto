@@ -1,0 +1,6 @@
+syntax = "proto3";
+package determinism.inputsynth.v1;
+
+message PadSegment { uint32 start_frame = 1; uint32 frames = 2; uint32 buttons = 3; }
+message Burst { uint32 format_version = 1; repeated PadSegment pad_segments = 2; }
+service InputSynthesizer {}

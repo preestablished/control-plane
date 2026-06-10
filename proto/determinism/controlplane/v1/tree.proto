@@ -1,0 +1,3 @@
+syntax = "proto3";
+package determinism.controlplane.v1;
+service TreeService {}

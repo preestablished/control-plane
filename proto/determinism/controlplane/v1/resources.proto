@@ -1,0 +1,21 @@
+syntax = "proto3";
+package determinism.controlplane.v1;
+
+message Budgets {
+  uint64 max_expansions = 1;
+  uint64 max_wall_clock_secs = 2;
+  uint64 max_guest_seconds = 3;
+  uint64 max_snapshot_bytes = 4;
+  uint32 max_tree_depth = 5;
+}
+message BurstParams {
+  uint32 k_bursts_per_expansion = 1;
+  uint32 burst_frames = 2;
+  double guest_seconds_per_job = 3;
+  string synthesizer_profile = 4;
+}
+message ExperimentSpec {
+  Budgets budgets = 1;
+  BurstParams burst = 2;
+  uint64 seed = 3;
+}

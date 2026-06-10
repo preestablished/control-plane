@@ -1,0 +1,31 @@
+[package]
+name = "determinism-proto"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Shared Project Determinism protobuf contract facade"
+
+[features]
+default = ["all"]
+all = [
+  "common",
+  "hypervisor",
+  "snapstore",
+  "orchestrator",
+  "inputsynth",
+  "policy",
+  "scorer",
+  "replay",
+  "observatory",
+  "controlplane",
+]
+common = []
+hypervisor = ["common"]
+snapstore = ["common"]
+orchestrator = ["common", "controlplane"]
+inputsynth = ["common"]
+policy = ["inputsynth"]
+scorer = ["common"]
+replay = ["common", "hypervisor"]
+observatory = ["common"]
+controlplane = ["common"]

@@ -1,0 +1,8 @@
+syntax = "proto3";
+package determinism.common.v1;
+
+message Timestamp { int64 unix_millis = 1; }
+message Blake3 { bytes hash = 1; }
+message PageRef { bytes snapshot_ref = 1; }
+message ListPage { uint32 page_size = 1; string page_token = 2; }
+message ListPageOut { string next_page_token = 1; }

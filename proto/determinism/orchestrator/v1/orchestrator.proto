@@ -1,0 +1,10 @@
+syntax = "proto3";
+package determinism.orchestrator.v1;
+
+import "determinism/controlplane/v1/resources.proto";
+
+message StartExperimentRequest {
+  string experiment_id = 1;
+  determinism.controlplane.v1.ExperimentSpec spec = 2;
+}
+service ExplorationOrchestrator {}

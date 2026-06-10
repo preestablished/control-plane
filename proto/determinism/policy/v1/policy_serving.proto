@@ -1,0 +1,5 @@
+syntax = "proto3";
+package determinism.policy.v1;
+
+message Token { uint32 token_id = 1; float logprob = 2; }
+service PolicyServing {}

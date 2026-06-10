@@ -1,0 +1,10 @@
+syntax = "proto3";
+package determinism.scorer.v1;
+
+message ScoreResult {
+  uint64 node_id = 1;
+  double progress_score = 2;
+  double novelty_score = 3;
+  bool duplicate = 4;
+}
+service StateScorer {}

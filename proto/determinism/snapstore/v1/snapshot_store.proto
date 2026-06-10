@@ -1,0 +1,12 @@
+syntax = "proto3";
+package determinism.snapstore.v1;
+
+message NodeMeta {
+  string experiment_id = 1;
+  uint64 node_id = 2;
+  optional uint64 parent_id = 3;
+  bytes snapshot_ref = 4;
+  bytes input_log_id = 5;
+}
+message PutSnapshotRequest { bytes manifest = 1; }
+service SnapshotStore {}

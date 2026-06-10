@@ -1,0 +1,9 @@
+syntax = "proto3";
+package determinism.replay.v1;
+
+message SubmitReplayJobRequest {
+  string experiment_id = 1;
+  uint64 target_node_id = 2;
+  bool verify_only = 3;
+}
+service ReplayRenderer {}

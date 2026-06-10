@@ -1,0 +1,13 @@
+syntax = "proto3";
+package determinism.hypervisor.v1;
+
+message SnapshotRef { bytes hash = 1; }
+message Lease { uint64 slot_id = 1; bytes token = 2; }
+message KvmCaps {
+  bool user_space_msr = 1;
+  bool msr_filter = 2;
+  bool dirty_ring = 3;
+  bool immediate_exit = 4;
+  bool no_in_kernel_irqchip = 5;
+}
+service HypervisorWorker {}
