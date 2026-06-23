@@ -1,18 +1,16 @@
 syntax = "proto3";
-
 package determinism.inputsynth.v1;
 
 service InputSynthesizer {
   rpc ProposeBursts (ProposeBurstsRequest) returns (ProposeBurstsResponse);
   rpc LoadMacroPack (LoadMacroPackRequest) returns (LoadMacroPackResponse);
-  rpc MineMacros    (MineMacrosRequest)    returns (MineMacrosResponse);
-  rpc Health        (HealthRequest)        returns (HealthResponse);
+  rpc MineMacros (MineMacrosRequest) returns (MineMacrosResponse);
+  rpc Health (HealthRequest) returns (HealthResponse);
 }
 
 message PadSegment {
-  uint32 start_frame = 1;
-  uint32 frames = 2;
-  uint32 buttons = 3;
+  uint32 buttons = 1;
+  uint32 hold_frames = 2;
 }
 
 message PadBurst {
@@ -48,12 +46,11 @@ message EventBurst {
 
 message Burst {
   uint32 format_version = 1;
-  repeated PadSegment pad_segments = 2 [deprecated = true];
+  bytes burst_id = 2;
   oneof body {
     PadBurst pad = 3;
     EventBurst event = 4;
   }
-  bytes burst_id = 5;
 }
 
 message ProposeBurstsRequest {
@@ -141,12 +138,12 @@ message PathSample {
 }
 
 message MiningParams {
-  optional uint32 min_support = 1;
-  optional uint32 min_paths = 2;
-  optional uint32 max_len_tokens = 3;
-  optional uint32 max_macros = 4;
-  optional double containment_alpha = 5;
-  optional double dedup_edit_dist = 6;
+  uint32 min_support = 1;
+  uint32 min_paths = 2;
+  uint32 max_len_tokens = 3;
+  uint32 max_macros = 4;
+  double containment_alpha = 5;
+  double dedup_edit_dist = 6;
 }
 
 message MineMacrosResponse {
@@ -223,7 +220,6 @@ message HealthResponse {
     DEGRADED = 2;
     NOT_SERVING = 3;
   }
-
   Status status = 1;
   string synth_version = 2;
   repeated string loaded_packs = 3;

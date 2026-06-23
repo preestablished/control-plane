@@ -1,6 +1,6 @@
 [package]
 name = "determinism-proto"
-version = "0.1.0"
+version = "0.2.0"
 edition.workspace = true
 license.workspace = true
 description = "Shared Project Determinism protobuf contract facade"
@@ -23,23 +23,19 @@ common = []
 hypervisor = ["common"]
 snapstore = ["common"]
 orchestrator = ["common", "controlplane"]
-inputsynth = [
-  "common",
-  "dep:prost",
-  "dep:protoc-bin-vendored",
-  "dep:tonic",
-  "dep:tonic-build",
-]
+inputsynth = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 policy = ["inputsynth"]
-scorer = ["common"]
+scorer = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 replay = ["common", "hypervisor"]
 observatory = ["common"]
 controlplane = ["common"]
 
 [dependencies]
-prost = { version = "0.13", optional = true }
-tonic = { version = "0.12", optional = true }
+prost = { version = "0.14.4", optional = true }
+tonic = { version = "0.14.6", optional = true }
+tonic-prost = { version = "0.14.6", optional = true }
 
 [build-dependencies]
-protoc-bin-vendored = { version = "3", optional = true }
-tonic-build = { version = "0.12", optional = true }
+prost-build = "0.14.4"
+protoc-bin-vendored = "3.2.0"
+tonic-prost-build = "0.14.6"

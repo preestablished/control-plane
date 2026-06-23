@@ -1,10 +1,9 @@
 #![forbid(unsafe_code)]
 //! Shared Project Determinism contract facade.
 //!
-//! M0 keeps code generation intentionally thin so every repo can compile against one
-//! versioned crate while the service implementations are still skeletons.
+//! Shared handwritten M0 facades plus generated Phase 4 service contracts.
 
-pub const PROTO_VERSION: &str = "proto-v0.1.0";
+pub const PROTO_VERSION: &str = "proto-v0.2.0";
 
 #[cfg(feature = "common")]
 pub mod common {
@@ -147,8 +146,7 @@ pub mod orchestrator {
 pub mod inputsynth {
     pub mod v1 {
         pub const BURST_FORMAT_VERSION: u32 = 1;
-
-        include!(concat!(env!("OUT_DIR"), "/determinism.inputsynth.v1.rs"));
+        tonic::include_proto!("determinism.inputsynth.v1");
     }
 }
 
@@ -166,13 +164,7 @@ pub mod policy {
 #[cfg(feature = "scorer")]
 pub mod scorer {
     pub mod v1 {
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct ScoreResult {
-            pub node_id: u64,
-            pub progress_score: f64,
-            pub novelty_score: f64,
-            pub duplicate: bool,
-        }
+        tonic::include_proto!("determinism.scorer.v1");
     }
 }
 
@@ -216,7 +208,7 @@ pub mod observatory {
 mod tests {
     #[test]
     fn exposes_proto_tag() {
-        assert_eq!(crate::PROTO_VERSION, "proto-v0.1.0");
+        assert_eq!(crate::PROTO_VERSION, "proto-v0.2.0");
     }
 
     #[cfg(feature = "inputsynth")]
