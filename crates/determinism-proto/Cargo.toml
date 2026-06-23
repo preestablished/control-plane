@@ -23,7 +23,13 @@ common = []
 hypervisor = ["common"]
 snapstore = ["common"]
 orchestrator = ["common", "controlplane"]
-inputsynth = ["common"]
+inputsynth = [
+  "common",
+  "dep:prost",
+  "dep:protoc-bin-vendored",
+  "dep:tonic",
+  "dep:tonic-build",
+]
 policy = ["inputsynth"]
 scorer = ["common"]
 replay = ["common", "hypervisor"]
@@ -31,9 +37,9 @@ observatory = ["common"]
 controlplane = ["common"]
 
 [dependencies]
-prost = "0.13"
-tonic = "0.12"
+prost = { version = "0.13", optional = true }
+tonic = { version = "0.12", optional = true }
 
 [build-dependencies]
-protoc-bin-vendored = "3"
-tonic-build = "0.12"
+protoc-bin-vendored = { version = "3", optional = true }
+tonic-build = { version = "0.12", optional = true }
