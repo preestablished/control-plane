@@ -148,18 +148,7 @@ pub mod inputsynth {
     pub mod v1 {
         pub const BURST_FORMAT_VERSION: u32 = 1;
 
-        #[derive(Clone, Debug, Default, PartialEq, Eq)]
-        pub struct PadSegment {
-            pub start_frame: u32,
-            pub frames: u32,
-            pub buttons: u32,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq, Eq)]
-        pub struct Burst {
-            pub format_version: u32,
-            pub pad_segments: Vec<PadSegment>,
-        }
+        include!(concat!(env!("OUT_DIR"), "/determinism.inputsynth.v1.rs"));
     }
 }
 
@@ -234,5 +223,79 @@ mod tests {
     #[test]
     fn burst_version_is_stable() {
         assert_eq!(crate::inputsynth::v1::BURST_FORMAT_VERSION, 1);
+    }
+
+    #[cfg(feature = "inputsynth")]
+    #[test]
+    fn inputsynth_facade_exposes_required_generated_symbols() {
+        use crate::inputsynth::v1::{
+            health_response, input_synthesizer_client::InputSynthesizerClient,
+            load_macro_pack_request, DocumentKind, HealthRequest, HealthResponse,
+            LoadMacroPackRequest, MineMacrosRequest, MineMacrosResponse, ModelKind, NodeContext,
+            ProposeBurstsRequest, ProvenancedBurst, ScoredBurst,
+        };
+
+        let _client_type = std::mem::size_of::<InputSynthesizerClient<tonic::transport::Channel>>();
+        let load = LoadMacroPackRequest {
+            source: Some(load_macro_pack_request::Source::DocumentYaml(
+                b"version: 1\n".to_vec(),
+            )),
+            kind: DocumentKind::ExperimentConfig as i32,
+        };
+        let propose = ProposeBurstsRequest {
+            experiment_id: "exp-a".to_owned(),
+            node_context: Some(NodeContext {
+                node_id: "7".to_owned(),
+                snapshot_ref: "00".repeat(32),
+                depth: 1,
+                node_score: 1.25,
+                novelty: 0.5,
+                ram_features: Default::default(),
+                frame_embedding: Vec::new(),
+                recent_inputs: None,
+                parent_burst: Some(ProvenancedBurst {
+                    burst: None,
+                    provenance: None,
+                }),
+                sibling_bursts: vec![ScoredBurst {
+                    burst: None,
+                    score_delta: 0.75,
+                }],
+            }),
+            k: 1,
+            length_hint: 8,
+            seed: 99,
+            model: ModelKind::Pad as i32,
+            config_overrides_yaml: Vec::new(),
+        };
+        let health = HealthResponse {
+            status: health_response::Status::Serving as i32,
+            synth_version: "test".to_owned(),
+            loaded_packs: vec!["pack-a".to_owned()],
+            loaded_experiments: vec!["exp-a".to_owned()],
+            policy_endpoint_up: false,
+            policy_deterministic: true,
+            mining_in_progress: false,
+        };
+        let mine = MineMacrosRequest {
+            experiment_id: "exp-a".to_owned(),
+            paths: Vec::new(),
+            params: None,
+        };
+        let mined = MineMacrosResponse {
+            macro_pack_yaml: Vec::new(),
+            pack_id: String::new(),
+            stats: Vec::new(),
+            paths_used: 0,
+            tokens_scanned: 0,
+        };
+
+        assert_eq!(crate::inputsynth::v1::BURST_FORMAT_VERSION, 1);
+        assert_eq!(load.kind, DocumentKind::ExperimentConfig as i32);
+        assert_eq!(propose.k, 1);
+        assert_eq!(health.status, health_response::Status::Serving as i32);
+        assert_eq!(mine.experiment_id, "exp-a");
+        assert_eq!(mined.paths_used, 0);
+        let _ = HealthRequest {};
     }
 }

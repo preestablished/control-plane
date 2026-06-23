@@ -1,6 +1,232 @@
 syntax = "proto3";
+
 package determinism.inputsynth.v1;
 
-message PadSegment { uint32 start_frame = 1; uint32 frames = 2; uint32 buttons = 3; }
-message Burst { uint32 format_version = 1; repeated PadSegment pad_segments = 2; }
-service InputSynthesizer {}
+service InputSynthesizer {
+  rpc ProposeBursts (ProposeBurstsRequest) returns (ProposeBurstsResponse);
+  rpc LoadMacroPack (LoadMacroPackRequest) returns (LoadMacroPackResponse);
+  rpc MineMacros    (MineMacrosRequest)    returns (MineMacrosResponse);
+  rpc Health        (HealthRequest)        returns (HealthResponse);
+}
+
+message PadSegment {
+  uint32 buttons = 1;
+  uint32 hold_frames = 2;
+}
+
+message PadBurst {
+  repeated PadSegment segments = 1;
+  string button_alphabet = 2;
+}
+
+message FieldValue {
+  oneof value {
+    int64 int_val = 1;
+    string enum_val = 2;
+    uint64 dur_ns = 3;
+    bytes bytes_val = 4;
+  }
+}
+
+message GrammarField {
+  string name = 1;
+  FieldValue value = 2;
+}
+
+message GrammarEvent {
+  string event_type = 1;
+  uint64 at_offset_ns = 2;
+  repeated GrammarField fields = 3;
+  bytes payload = 4;
+}
+
+message EventBurst {
+  repeated GrammarEvent events = 1;
+  string grammar_id = 2;
+}
+
+message Burst {
+  uint32 format_version = 1;
+  bytes burst_id = 2;
+  oneof body {
+    PadBurst pad = 3;
+    EventBurst event = 4;
+  }
+}
+
+message ProposeBurstsRequest {
+  string experiment_id = 1;
+  NodeContext node_context = 2;
+  uint32 k = 3;
+  uint32 length_hint = 4;
+  fixed64 seed = 5;
+  ModelKind model = 6;
+  bytes config_overrides_yaml = 7;
+}
+
+enum ModelKind {
+  MODEL_KIND_UNSPECIFIED = 0;
+  MODEL_KIND_PAD = 1;
+  MODEL_KIND_EVENT_GRAMMAR = 2;
+}
+
+message NodeContext {
+  string node_id = 1;
+  string snapshot_ref = 2;
+  uint32 depth = 3;
+  double node_score = 4;
+  double novelty = 5;
+  map<string, double> ram_features = 6;
+  repeated float frame_embedding = 7;
+  Burst recent_inputs = 8;
+  ProvenancedBurst parent_burst = 9;
+  repeated ScoredBurst sibling_bursts = 10;
+}
+
+message ScoredBurst {
+  ProvenancedBurst burst = 1;
+  double score_delta = 2;
+}
+
+message ProvenancedBurst {
+  Burst burst = 1;
+  Provenance provenance = 2;
+}
+
+message ProposeBurstsResponse {
+  repeated ProvenancedBurst bursts = 1;
+  bytes config_fingerprint = 2;
+  string synth_version = 3;
+  fixed64 seed = 4;
+  repeated DegradedGenerator degraded = 5;
+}
+
+message DegradedGenerator {
+  GeneratorKind generator = 1;
+  string reason = 2;
+}
+
+message LoadMacroPackRequest {
+  oneof source {
+    bytes document_yaml = 1;
+    string artifact_ref = 2;
+  }
+  DocumentKind kind = 3;
+}
+
+enum DocumentKind {
+  DOCUMENT_KIND_UNSPECIFIED = 0;
+  DOCUMENT_KIND_MACRO_PACK = 1;
+  DOCUMENT_KIND_EXPERIMENT_CONFIG = 2;
+  DOCUMENT_KIND_EVENT_GRAMMAR = 3;
+}
+
+message LoadMacroPackResponse {
+  string document_id = 1;
+  uint32 items_loaded = 2;
+  repeated string warnings = 3;
+}
+
+message MineMacrosRequest {
+  string experiment_id = 1;
+  repeated PathSample paths = 2;
+  MiningParams params = 3;
+}
+
+message PathSample {
+  repeated ScoredBurst expansions = 1;
+  double terminal_score = 2;
+}
+
+message MiningParams {
+  optional uint32 min_support = 1;
+  optional uint32 min_paths = 2;
+  optional uint32 max_len_tokens = 3;
+  optional uint32 max_macros = 4;
+  optional double containment_alpha = 5;
+  optional double dedup_edit_dist = 6;
+}
+
+message MineMacrosResponse {
+  bytes macro_pack_yaml = 1;
+  string pack_id = 2;
+  repeated MinedMacroStats stats = 3;
+  uint32 paths_used = 4;
+  uint64 tokens_scanned = 5;
+}
+
+message MinedMacroStats {
+  string name = 1;
+  uint32 support = 2;
+  uint32 paths = 3;
+  double lift = 4;
+  double score = 5;
+  uint32 len_tokens = 6;
+}
+
+enum GeneratorKind {
+  GENERATOR_KIND_UNSPECIFIED = 0;
+  GENERATOR_KIND_WEIGHTED_RANDOM = 1;
+  GENERATOR_KIND_MACRO = 2;
+  GENERATOR_KIND_MUTATION = 3;
+  GENERATOR_KIND_POLICY = 4;
+}
+
+message Provenance {
+  GeneratorKind generator = 1;
+  uint32 slot = 2;
+  string rng_stream = 3;
+  bytes config_fingerprint = 4;
+  GeneratorKind fallback_from = 5;
+  MacroProvenance macro = 6;
+  MutationProvenance mutation = 7;
+  PolicyProvenance policy = 8;
+}
+
+message MacroProvenance {
+  string pack_id = 1;
+  string macro_name = 2;
+  map<string, string> param_bindings = 3;
+  uint32 macro_frames = 4;
+  uint32 tail_frames = 5;
+  uint32 chain_index = 6;
+}
+
+message MutationProvenance {
+  bytes base_burst_id = 1;
+  bytes donor_burst_id = 2;
+  bool base_was_sibling = 3;
+  repeated MutationOp ops = 4;
+  bool post_clamp = 5;
+}
+
+message MutationOp {
+  string op = 1;
+  map<string, string> args = 2;
+}
+
+message PolicyProvenance {
+  string model_id = 1;
+  string model_version = 2;
+  double temperature = 3;
+  bool server_attested_deterministic = 4;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    SERVING = 1;
+    DEGRADED = 2;
+    NOT_SERVING = 3;
+  }
+
+  Status status = 1;
+  string synth_version = 2;
+  repeated string loaded_packs = 3;
+  repeated string loaded_experiments = 4;
+  bool policy_endpoint_up = 5;
+  bool policy_deterministic = 6;
+  bool mining_in_progress = 7;
+}

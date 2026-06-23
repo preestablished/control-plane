@@ -29,3 +29,11 @@ scorer = ["common"]
 replay = ["common", "hypervisor"]
 observatory = ["common"]
 controlplane = ["common"]
+
+[dependencies]
+prost = "0.13"
+tonic = "0.12"
+
+[build-dependencies]
+protoc-bin-vendored = "3"
+tonic-build = "0.12"
