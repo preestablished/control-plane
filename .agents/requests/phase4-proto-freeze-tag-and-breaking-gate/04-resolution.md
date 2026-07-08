@@ -1,9 +1,8 @@
 # Resolution: Phase-4 proto freeze, breaking gate, and tag
 
-Status: local implementation and verification are complete through the code,
-proto, Buf, and downstream smoke-test workstreams. Remote CI, the scratch
-breaking demonstration, and the release tag remain pending and must be filled
-before this request is closed.
+Status: complete. The implementation landed on `main`, required local and
+remote gates passed, the scratch breaking demonstration produced the expected
+red Buf gate, and `proto-v0.2.0` was tagged and verified.
 
 ## Workstream commits
 
@@ -13,7 +12,7 @@ before this request is closed.
 | W2 CI/aarch64/version guards | `51d74ca` | Split CI into `proto` and Rust x86_64/aarch64 matrix jobs; added tag trigger and version drift script. |
 | W3 ExperimentSpec mirror | `51d74ca` | Replaced the old controlplane `ExperimentSpec` stub with the orchestrator `ExperimentConfig` mirror. |
 | W4 Descriptor/downstream checks | `51d74ca` | Added descriptor-equality test and verified sibling smoke tests locally. |
-| W5 Tag handoff | pending | Main CI is green and scratch breaking evidence is captured; `proto-v0.2.0` tag creation remains. |
+| W5 Tag handoff | `1a9fb94` / `proto-v0.2.0` | Main CI is green, scratch breaking evidence is captured, and the release tag is published. |
 
 ## Buf gate
 
@@ -50,7 +49,9 @@ Pre-release/vdev and ignored by `buf breaking`:
 - aarch64 mechanism: native GitHub-hosted `ubuntu-24.04-arm`.
 - Neither lane is marked `continue-on-error`.
 - Main CI URL:
-  https://github.com/preestablished/control-plane/actions/runs/28913922974
+  https://github.com/preestablished/control-plane/actions/runs/28914073266
+- Tag CI URL:
+  https://github.com/preestablished/control-plane/actions/runs/28914115796
 
 ## Descriptor mirror
 
@@ -74,11 +75,10 @@ Passed locally from `control-plane`:
 - `scripts/check-proto-version.sh`
 - Root/package proto copy checks for scorer, inputsynth, and orchestrator
 
-Current pre-tag bootstrap state:
+Current post-tag breaking baseline:
 
-- `scripts/buf-breaking-against.sh` compares against merge-base
-  `1e14bd6c221d6063b780f3d8e6590bf328c6d76b` because no `proto-v*` tag exists
-  yet. That is the final green main commit and the local gate passes.
+- `scripts/buf-breaking-against.sh` compares against `proto-v0.2.0`, which is
+  now the latest `proto-v*` tag, and the local gate passes.
 
 Passed locally from sibling checkouts:
 
@@ -105,12 +105,13 @@ Captured before tag:
 ## Tag
 
 - Tag name: `proto-v0.2.0`
-- Target SHA: pending
-- Tag-triggered CI URL: pending
+- Target SHA: `1a9fb946b48f6bf5b328823a5e2004aa075ff79c`
+- Tag-triggered CI URL:
+  https://github.com/preestablished/control-plane/actions/runs/28914115796
 
 ## Downstream notifications
 
-Notify after final tag:
+Notify downstream consumers:
 
 - snapshot-store, because its CI pin predates Phase-4 contracts
 - reference-workload
