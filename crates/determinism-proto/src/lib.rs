@@ -92,129 +92,7 @@ pub mod snapstore {
 #[cfg(feature = "controlplane")]
 pub mod controlplane {
     pub mod v1 {
-        #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-        #[repr(i32)]
-        pub enum PruneAction {
-            #[default]
-            Exhausted = 0,
-            Drop = 1,
-        }
-
-        #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-        #[repr(i32)]
-        pub enum OnGoal {
-            #[default]
-            Stop = 0,
-            Continue = 1,
-        }
-
-        #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-        #[repr(i32)]
-        pub enum PolicyKind {
-            #[default]
-            Softmax = 0,
-            Ucb = 1,
-            Staged = 2,
-        }
-
-        #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-        #[repr(i32)]
-        pub enum SchedMode {
-            #[default]
-            Fast = 0,
-            Deterministic = 1,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct Budgets {
-            pub max_nodes: u64,
-            pub max_wall_clock_s: u64,
-            pub max_guest_instructions: u64,
-            pub max_expansions: u64,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct SelectionConfig {
-            pub policy: PolicyKind,
-            pub alpha: f64,
-            pub beta: f64,
-            pub gamma: f64,
-            pub delta: f64,
-            pub temperature: f64,
-            pub ucb_c: f64,
-            pub staged: StagedConfig,
-            pub max_visits_per_node: u32,
-            pub exhaust_after_dup_expansions: u32,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct StagedConfig {
-            pub inner: PolicyKind,
-            pub epsilon_regress: f64,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct BurstConfig {
-            pub k_per_expansion: u32,
-            pub base_burst_len_frames: u32,
-            pub max_burst_len_frames: u32,
-            pub max_guest_instructions_per_job: u64,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct PlateauConfig {
-            pub window_n: u32,
-            pub epsilon_s: f64,
-            pub ladder: LadderConfig,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct LadderConfig {
-            pub burst_len_factor: f64,
-            pub temp_factor: f64,
-            pub macro_weight_hot: f64,
-            pub backtrack_kappa: f64,
-            pub backtrack_depth_quantile: f64,
-            pub radius_factor: f64,
-            pub max_level: u32,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct SchedulingConfig {
-            pub mode: SchedMode,
-            pub max_inflight_batches: u32,
-            pub job_timeout_s: u32,
-            pub retry_max: u32,
-            pub retry_backoff_ms: u32,
-            pub hypervisor_endpoints: Vec<String>,
-            pub allow_class_mismatch: bool,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct CheckpointConfig {
-            pub every_commits: u32,
-            pub every_seconds: u32,
-        }
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct ExperimentSpec {
-            pub version: u32,
-            pub seed: u64,
-            pub workload_image_ref: String,
-            pub feature_map_ref: String,
-            pub scoring_program_ref: String,
-            pub synth_config_ref: String,
-            pub macro_pack_refs: Vec<String>,
-            pub budgets: Budgets,
-            pub selection: SelectionConfig,
-            pub burst: BurstConfig,
-            pub plateau: PlateauConfig,
-            pub scheduling: SchedulingConfig,
-            pub checkpoint: CheckpointConfig,
-            pub prune_action: PruneAction,
-            pub on_goal: OnGoal,
-            pub decoded_features: Vec<String>,
-        }
+        include!(concat!(env!("OUT_DIR"), "/determinism.controlplane.v1.rs"));
     }
 }
 
@@ -299,12 +177,13 @@ mod tests {
 
     #[cfg(feature = "controlplane")]
     #[test]
-    fn controlplane_experiment_spec_facade_mirrors_config_shape() {
+    fn controlplane_experiment_spec_generated_wire_type_round_trips() {
         use crate::controlplane::v1::{
             Budgets, BurstConfig, CheckpointConfig, ExperimentSpec, LadderConfig, OnGoal,
             PlateauConfig, PolicyKind, PruneAction, SchedMode, SchedulingConfig, SelectionConfig,
             StagedConfig,
         };
+        use prost::Message;
 
         let spec = ExperimentSpec {
             version: 1,
@@ -314,37 +193,37 @@ mod tests {
             scoring_program_ref: "score:program".to_owned(),
             synth_config_ref: "synth:config".to_owned(),
             macro_pack_refs: vec!["macro:pack".to_owned()],
-            budgets: Budgets {
+            budgets: Some(Budgets {
                 max_nodes: 1_000,
                 max_wall_clock_s: 86_400,
                 max_guest_instructions: 2_000,
                 max_expansions: 500,
-            },
-            selection: SelectionConfig {
-                policy: PolicyKind::Staged,
+            }),
+            selection: Some(SelectionConfig {
+                policy: PolicyKind::Staged as i32,
                 alpha: 1.0,
                 beta: 0.5,
                 gamma: 0.3,
                 delta: 0.1,
                 temperature: 1.25,
                 ucb_c: 1.4,
-                staged: StagedConfig {
-                    inner: PolicyKind::Ucb,
+                staged: Some(StagedConfig {
+                    inner: PolicyKind::Ucb as i32,
                     epsilon_regress: 0.05,
-                },
+                }),
                 max_visits_per_node: 64,
                 exhaust_after_dup_expansions: 8,
-            },
-            burst: BurstConfig {
+            }),
+            burst: Some(BurstConfig {
                 k_per_expansion: 16,
                 base_burst_len_frames: 120,
                 max_burst_len_frames: 600,
                 max_guest_instructions_per_job: 10_000,
-            },
-            plateau: PlateauConfig {
+            }),
+            plateau: Some(PlateauConfig {
                 window_n: 200,
                 epsilon_s: 0.001,
-                ladder: LadderConfig {
+                ladder: Some(LadderConfig {
                     burst_len_factor: 1.5,
                     temp_factor: 1.75,
                     macro_weight_hot: 0.5,
@@ -352,28 +231,37 @@ mod tests {
                     backtrack_depth_quantile: 0.5,
                     radius_factor: 2.0,
                     max_level: 4,
-                },
-            },
-            scheduling: SchedulingConfig {
-                mode: SchedMode::Deterministic,
+                }),
+            }),
+            scheduling: Some(SchedulingConfig {
+                mode: SchedMode::Deterministic as i32,
                 max_inflight_batches: 1,
                 job_timeout_s: 120,
                 retry_max: 3,
                 retry_backoff_ms: 250,
                 hypervisor_endpoints: vec!["http://127.0.0.1:9000".to_owned()],
                 allow_class_mismatch: false,
-            },
-            checkpoint: CheckpointConfig {
+            }),
+            checkpoint: Some(CheckpointConfig {
                 every_commits: 64,
                 every_seconds: 30,
-            },
-            prune_action: PruneAction::Drop,
-            on_goal: OnGoal::Continue,
+            }),
+            prune_action: PruneAction::Drop as i32,
+            on_goal: OnGoal::Continue as i32,
             decoded_features: vec!["stage".to_owned()],
         };
 
+        let bytes = spec.encode_to_vec();
+        let decoded = ExperimentSpec::decode(bytes.as_slice()).unwrap();
+        assert_eq!(decoded, spec);
         assert_eq!(spec.seed, 42);
-        assert_eq!(spec.selection.staged.inner as i32, PolicyKind::Ucb as i32);
+        assert_eq!(
+            spec.selection
+                .as_ref()
+                .and_then(|selection| selection.staged.as_ref())
+                .map(|staged| staged.inner),
+            Some(PolicyKind::Ucb as i32)
+        );
         assert_eq!(PruneAction::Exhausted as i32, 0);
         assert_eq!(PruneAction::Drop as i32, 1);
         assert_eq!(OnGoal::Stop as i32, 0);

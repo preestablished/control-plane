@@ -28,7 +28,7 @@ policy = ["inputsynth"]
 scorer = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 replay = ["common", "hypervisor"]
 observatory = ["common"]
-controlplane = ["common"]
+controlplane = ["common", "dep:prost"]
 
 [dependencies]
 prost = { version = "0.14.4", optional = true }

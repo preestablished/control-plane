@@ -4,9 +4,11 @@ use std::process::Command;
 
 use prost::Message;
 use prost_types::{
+    descriptor_proto, enum_descriptor_proto,
     field_descriptor_proto::{Label, Type},
-    DescriptorProto, EnumDescriptorProto, FieldDescriptorProto, FileDescriptorProto,
-    FileDescriptorSet,
+    DescriptorProto, EnumDescriptorProto, EnumOptions, EnumValueOptions, FieldDescriptorProto,
+    FieldOptions, FileDescriptorProto, FileDescriptorSet, MessageOptions, OneofDescriptorProto,
+    OneofOptions,
 };
 
 const CONTROLPLANE_PACKAGE: &str = "determinism.controlplane.v1";
@@ -170,12 +172,42 @@ impl<'a> DescriptorIndex<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 struct NormalizedMessage {
     fields: Vec<NormalizedField>,
+    nested_messages: Vec<NormalizedNestedMessage>,
+    nested_enums: Vec<NormalizedNestedEnum>,
+    oneofs: Vec<NormalizedOneof>,
+    reserved_ranges: Vec<NormalizedReservedRange>,
+    reserved_names: Vec<String>,
+    options: Option<MessageOptions>,
+}
+
+#[derive(Debug, PartialEq)]
+struct NormalizedNestedMessage {
+    name: String,
+    message: NormalizedMessage,
+}
+
+#[derive(Debug, PartialEq)]
+struct NormalizedNestedEnum {
+    name: String,
+    enumeration: NormalizedEnum,
+}
+
+#[derive(Debug, PartialEq)]
+struct NormalizedOneof {
+    name: String,
+    options: Option<OneofOptions>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
+struct NormalizedReservedRange {
+    start: i32,
+    end: i32,
+}
+
+#[derive(Debug, PartialEq)]
 struct NormalizedField {
     name: String,
     number: i32,
@@ -184,22 +216,52 @@ struct NormalizedField {
     type_name: Option<String>,
     oneof_index: Option<i32>,
     proto3_optional: Option<bool>,
+    default_value: Option<String>,
+    options: Option<FieldOptions>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 struct NormalizedEnum {
     values: Vec<NormalizedEnumValue>,
+    reserved_ranges: Vec<NormalizedReservedRange>,
+    reserved_names: Vec<String>,
+    options: Option<EnumOptions>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 struct NormalizedEnumValue {
     name: String,
     number: i32,
+    options: Option<EnumValueOptions>,
 }
 
 fn normalize_message(message: &DescriptorProto) -> NormalizedMessage {
     NormalizedMessage {
         fields: message.field.iter().map(normalize_field).collect(),
+        nested_messages: message
+            .nested_type
+            .iter()
+            .map(|nested| NormalizedNestedMessage {
+                name: nested.name.clone().expect("nested message name"),
+                message: normalize_message(nested),
+            })
+            .collect(),
+        nested_enums: message
+            .enum_type
+            .iter()
+            .map(|nested| NormalizedNestedEnum {
+                name: nested.name.clone().expect("nested enum name"),
+                enumeration: normalize_enum(nested),
+            })
+            .collect(),
+        oneofs: message.oneof_decl.iter().map(normalize_oneof).collect(),
+        reserved_ranges: message
+            .reserved_range
+            .iter()
+            .map(normalize_message_reserved_range)
+            .collect(),
+        reserved_names: message.reserved_name.clone(),
+        options: message.options.clone(),
     }
 }
 
@@ -212,6 +274,8 @@ fn normalize_field(field: &FieldDescriptorProto) -> NormalizedField {
         type_name: field.type_name.as_deref().map(normalize_type_name),
         oneof_index: field.oneof_index,
         proto3_optional: field.proto3_optional,
+        default_value: field.default_value.clone(),
+        options: field.options.clone(),
     }
 }
 
@@ -223,8 +287,41 @@ fn normalize_enum(enumeration: &EnumDescriptorProto) -> NormalizedEnum {
             .map(|value| NormalizedEnumValue {
                 name: normalize_enum_value_name(value.name.as_deref().expect("enum value name")),
                 number: value.number(),
+                options: value.options.clone(),
             })
             .collect(),
+        reserved_ranges: enumeration
+            .reserved_range
+            .iter()
+            .map(normalize_enum_reserved_range)
+            .collect(),
+        reserved_names: enumeration.reserved_name.clone(),
+        options: enumeration.options.clone(),
+    }
+}
+
+fn normalize_oneof(oneof: &OneofDescriptorProto) -> NormalizedOneof {
+    NormalizedOneof {
+        name: oneof.name.clone().expect("oneof name"),
+        options: oneof.options.clone(),
+    }
+}
+
+fn normalize_message_reserved_range(
+    range: &descriptor_proto::ReservedRange,
+) -> NormalizedReservedRange {
+    NormalizedReservedRange {
+        start: range.start(),
+        end: range.end(),
+    }
+}
+
+fn normalize_enum_reserved_range(
+    range: &enum_descriptor_proto::EnumReservedRange,
+) -> NormalizedReservedRange {
+    NormalizedReservedRange {
+        start: range.start(),
+        end: range.end(),
     }
 }
 

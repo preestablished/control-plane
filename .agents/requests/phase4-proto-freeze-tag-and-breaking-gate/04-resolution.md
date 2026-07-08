@@ -48,8 +48,10 @@ Pre-release/vdev and ignored by `buf breaking`:
 - x86_64 mechanism: GitHub-hosted `ubuntu-latest`.
 - aarch64 mechanism: native GitHub-hosted `ubuntu-24.04-arm`.
 - Neither lane is marked `continue-on-error`.
-- Main CI URL:
+- Release-candidate main CI URL:
   https://github.com/preestablished/control-plane/actions/runs/28914073266
+- Current main branch CI:
+  https://github.com/preestablished/control-plane/actions/workflows/ci.yaml?query=branch%3Amain
 - Tag CI URL:
   https://github.com/preestablished/control-plane/actions/runs/28914115796
 
