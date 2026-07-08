@@ -17,7 +17,6 @@ message ScoreBatchRequest {
   repeated StateInput states = 2;
   ArchiveUpdateMode archive_update = 3;
   string client_batch_id = 4;
-  bool return_decoded = 5;
 }
 
 enum ArchiveUpdateMode {
