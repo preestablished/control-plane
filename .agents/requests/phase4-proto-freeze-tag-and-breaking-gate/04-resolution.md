@@ -13,7 +13,7 @@ before this request is closed.
 | W2 CI/aarch64/version guards | `51d74ca` | Split CI into `proto` and Rust x86_64/aarch64 matrix jobs; added tag trigger and version drift script. |
 | W3 ExperimentSpec mirror | `51d74ca` | Replaced the old controlplane `ExperimentSpec` stub with the orchestrator `ExperimentConfig` mirror. |
 | W4 Descriptor/downstream checks | `51d74ca` | Added descriptor-equality test and verified sibling smoke tests locally. |
-| W5 Tag handoff | pending | Requires remote CI green, scratch breaking demo evidence, and `proto-v0.2.0` tag creation. |
+| W5 Tag handoff | pending | Main CI is green and scratch breaking evidence is captured; `proto-v0.2.0` tag creation remains. |
 
 ## Buf gate
 
@@ -49,7 +49,8 @@ Pre-release/vdev and ignored by `buf breaking`:
 - x86_64 mechanism: GitHub-hosted `ubuntu-latest`.
 - aarch64 mechanism: native GitHub-hosted `ubuntu-24.04-arm`.
 - Neither lane is marked `continue-on-error`.
-- Remote CI URLs: pending.
+- Main CI URL:
+  https://github.com/preestablished/control-plane/actions/runs/28913922974
 
 ## Descriptor mirror
 
@@ -68,18 +69,16 @@ Passed locally from `control-plane`:
 - `cargo build --workspace --all-features`
 - `cargo test --workspace --all-features`
 - `buf lint` with Buf `1.71.0`
+- `scripts/buf-breaking-against.sh`
 - `scripts/check-buf-breaking-self-test.sh`
 - `scripts/check-proto-version.sh`
 - Root/package proto copy checks for scorer, inputsynth, and orchestrator
 
-Known pre-tag bootstrap state:
+Current pre-tag bootstrap state:
 
-- `scripts/buf-breaking-against.sh` currently compares against merge-base
-  `261141b3bbaa4371a7dd4147ac6626e0f4918e53` because no `proto-v*` tag exists
-  and `origin/main` has not advanced to the final freeze commit. That correctly
-  reports the intentional pre-tag controlplane/orchestrator contract changes.
-  Re-run this gate after the final commit is on `main`, or after
-  `proto-v0.2.0` exists as the baseline.
+- `scripts/buf-breaking-against.sh` compares against merge-base
+  `1e14bd6c221d6063b780f3d8e6590bf328c6d76b` because no `proto-v*` tag exists
+  yet. That is the final green main commit and the local gate passes.
 
 Passed locally from sibling checkouts:
 
@@ -88,11 +87,20 @@ Passed locally from sibling checkouts:
 
 ## Scratch breaking demonstration
 
-Pending. Required before tag:
+Captured before tag:
 
-- Scratch branch name: pending
-- Frozen field changed: pending
-- Failing CI URL: pending
+- Scratch PR: https://github.com/preestablished/control-plane/pull/3
+- Scratch branch name: `scratch/proto-breaking-scorer-return-decoded`
+- Frozen field changed:
+  `proto/determinism/scorer/v1/scorer.proto`
+  `ScoreBatchRequest.return_decoded = 5` was deleted.
+- Failing CI URL:
+  https://github.com/preestablished/control-plane/actions/runs/28913986693/job/85776976986
+- Buf failure message:
+  previously present field `5` with name `return_decoded` on message
+  `ScoreBatchRequest` was deleted.
+- Cleanup: PR #3 was closed and the remote scratch branch was deleted after
+  evidence was captured.
 
 ## Tag
 
