@@ -132,13 +132,7 @@ pub mod controlplane {
 #[cfg(feature = "orchestrator")]
 pub mod orchestrator {
     pub mod v1 {
-        use crate::controlplane::v1::ExperimentSpec;
-
-        #[derive(Clone, Debug, Default, PartialEq)]
-        pub struct StartExperimentRequest {
-            pub experiment_id: String,
-            pub spec: ExperimentSpec,
-        }
+        tonic::include_proto!("determinism.orchestrator.v1");
     }
 }
 
@@ -289,5 +283,62 @@ mod tests {
         assert_eq!(mine.experiment_id, "exp-a");
         assert_eq!(mined.paths_used, 0);
         let _ = HealthRequest {};
+    }
+
+    #[cfg(feature = "orchestrator")]
+    #[test]
+    fn orchestrator_facade_exposes_required_generated_symbols() {
+        use crate::orchestrator::v1::{
+            exploration_orchestrator_client::ExplorationOrchestratorClient, progress_event,
+            Budgets, ExperimentConfig, ExperimentState, ExperimentStatus, GoalReached,
+            PolicyKind, ProgressEvent, SchedMode, SelectionConfig, StartExperimentRequest,
+        };
+
+        let _client_type =
+            std::mem::size_of::<ExplorationOrchestratorClient<tonic::transport::Channel>>();
+        let start = StartExperimentRequest {
+            experiment_id: "exp-a".to_owned(),
+            config: Some(ExperimentConfig {
+                version: 1,
+                seed: 42,
+                budgets: Some(Budgets {
+                    max_nodes: 1_000,
+                    ..Default::default()
+                }),
+                selection: Some(SelectionConfig {
+                    policy: PolicyKind::Softmax as i32,
+                    temperature: 1.0,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            resume_if_exists: true,
+            run_id: String::new(),
+        };
+        let event = ProgressEvent {
+            at: None,
+            status: Some(ExperimentStatus {
+                experiment_id: "exp-a".to_owned(),
+                state: ExperimentState::Running as i32,
+                ..Default::default()
+            }),
+            edge: Some(progress_event::Edge::Goal(GoalReached {
+                node_id: 7,
+                snapshot_ref: vec![0u8; 32],
+                score: 12.5,
+                depth: 3,
+            })),
+        };
+
+        assert_eq!(start.config.as_ref().map(|c| c.seed), Some(42));
+        assert!(matches!(
+            event.edge,
+            Some(progress_event::Edge::Goal(GoalReached { node_id: 7, .. }))
+        ));
+        assert_eq!(
+            ExperimentState::try_from(ExperimentState::GoalReached as i32),
+            Ok(ExperimentState::GoalReached)
+        );
+        assert_eq!(SchedMode::Fast as i32, 0);
     }
 }

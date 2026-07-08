@@ -3,11 +3,13 @@ use std::path::PathBuf;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_SCORER");
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_INPUTSYNTH");
+    println!("cargo:rerun-if-env-changed=CARGO_FEATURE_ORCHESTRATOR");
 
     let include_scorer = std::env::var_os("CARGO_FEATURE_SCORER").is_some();
     let include_inputsynth = std::env::var_os("CARGO_FEATURE_INPUTSYNTH").is_some();
+    let include_orchestrator = std::env::var_os("CARGO_FEATURE_ORCHESTRATOR").is_some();
 
-    if !include_scorer && !include_inputsynth {
+    if !include_scorer && !include_inputsynth && !include_orchestrator {
         return Ok(());
     }
 
@@ -25,6 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &packaged_proto_root,
                 include_scorer,
                 include_inputsynth,
+                include_orchestrator,
             )?;
         }
         workspace_proto_root
@@ -38,6 +41,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if include_inputsynth {
         protos.push(proto_root.join("determinism/inputsynth/v1/synthesizer.proto"));
+    }
+    if include_orchestrator {
+        protos.push(proto_root.join("determinism/orchestrator/v1/orchestrator.proto"));
     }
 
     println!("cargo:rerun-if-changed={}", proto_root.display());
@@ -62,6 +68,7 @@ fn assert_proto_copies_match(
     packaged_proto_root: &std::path::Path,
     include_scorer: bool,
     include_inputsynth: bool,
+    include_orchestrator: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut relative_paths = Vec::new();
     if include_scorer {
@@ -69,6 +76,9 @@ fn assert_proto_copies_match(
     }
     if include_inputsynth {
         relative_paths.push("determinism/inputsynth/v1/synthesizer.proto");
+    }
+    if include_orchestrator {
+        relative_paths.push("determinism/orchestrator/v1/orchestrator.proto");
     }
 
     for relative_path in relative_paths {

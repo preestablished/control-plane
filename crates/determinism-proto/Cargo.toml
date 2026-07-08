@@ -22,7 +22,7 @@ all = [
 common = []
 hypervisor = ["common"]
 snapstore = ["common"]
-orchestrator = ["common", "controlplane"]
+orchestrator = ["common", "controlplane", "dep:prost", "dep:prost-types", "dep:tonic", "dep:tonic-prost"]
 inputsynth = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 policy = ["inputsynth"]
 scorer = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
@@ -32,6 +32,7 @@ controlplane = ["common"]
 
 [dependencies]
 prost = { version = "0.14.4", optional = true }
+prost-types = { version = "0.14", optional = true }
 tonic = { version = "0.14.6", optional = true }
 tonic-prost = { version = "0.14.6", optional = true }
 
