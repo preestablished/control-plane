@@ -109,6 +109,7 @@ dependencies = [
  "prost-build",
  "prost-types",
  "protoc-bin-vendored",
+ "tempfile",
  "tonic",
  "tonic-prost",
  "tonic-prost-build",

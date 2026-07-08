@@ -2,15 +2,41 @@ name: ci
 on:
   pull_request:
   push:
+    branches:
+      - main
+    tags:
+      - "proto-v*"
 jobs:
+  proto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: bufbuild/buf-action@v1
+        with:
+          version: 1.71.0
+          setup_only: true
+      - run: buf --version
+      - run: buf lint
+      - run: scripts/buf-breaking-against.sh
+      - run: scripts/check-buf-breaking-self-test.sh
+      - run: scripts/check-proto-version.sh
+
   rust:
     strategy:
+      fail-fast: false
       matrix:
-        runner: [ubuntu-latest]
+        include:
+          - name: x86_64
+            runner: ubuntu-latest
+          - name: aarch64
+            runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo fmt --all -- --check
+      - if: ${{ matrix.name == 'x86_64' }}
+        run: cargo fmt --all -- --check
       - run: cargo build --workspace --all-features
       - run: cargo test --workspace --all-features

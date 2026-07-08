@@ -1,0 +1,44 @@
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  ignore_only:
+    ENUM_ZERO_VALUE_SUFFIX:
+      # The mirrored ExperimentSpec enum values must match orchestrator.
+      - proto/determinism/controlplane/v1/resources.proto
+      - proto/determinism/orchestrator/v1/orchestrator.proto
+    ENUM_VALUE_PREFIX:
+      # Frozen Phase-4 generated clients already expose these enum names.
+      - proto/determinism/inputsynth/v1/synthesizer.proto
+      - proto/determinism/scorer/v1/scorer.proto
+    PACKAGE_DIRECTORY_MATCH:
+      # replay.agent remains vdev and shares the replay/v1 placeholder directory.
+      - proto/determinism/replay/v1/reexec_agent.proto
+    DIRECTORY_SAME_PACKAGE:
+      # replay.agent remains vdev and shares the replay/v1 placeholder directory.
+      - proto/determinism/replay/v1/reexec_agent.proto
+      - proto/determinism/replay/v1/replay.proto
+    SERVICE_SUFFIX:
+      # Frozen or upstream-owned service paths are preserved at proto-v0.2.0.
+      - proto/determinism/hypervisor/v1/hypervisor.proto
+      - proto/determinism/inputsynth/v1/synthesizer.proto
+      - proto/determinism/observatory/v1/events.proto
+      - proto/determinism/orchestrator/v1/orchestrator.proto
+      - proto/determinism/policy/v1/policy_serving.proto
+      - proto/determinism/replay/v1/reexec_agent.proto
+      - proto/determinism/replay/v1/replay.proto
+      - proto/determinism/scorer/v1/scorer.proto
+      - proto/determinism/snapstore/v1/snapshot_store.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - proto/determinism/orchestrator/v1/orchestrator.proto
+breaking:
+  use:
+    - FILE
+  ignore:
+    - proto/determinism/hypervisor/v1
+    - proto/determinism/snapstore/v1
+    - proto/determinism/policy/v1
+    - proto/determinism/replay/v1
+    - proto/determinism/observatory/v1

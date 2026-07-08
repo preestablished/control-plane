@@ -1,0 +1,6 @@
+syntax = "proto3";
+package determinism.fixture.v1;
+
+message Fixture {
+  string id = 1;
+}
