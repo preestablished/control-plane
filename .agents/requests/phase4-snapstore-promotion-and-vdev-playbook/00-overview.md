@@ -1,5 +1,8 @@
 # Request: The First Real Promotion — snapstore/v1 Through The vdev Rails (Gated)
 
+> **CURRENT STATUS (2026-07-10):** The playbook half is now ready; real
+> snapstore promotion remains gated. Read `04-current-status-2026-07-10.md`.
+
 ## Who Is Asking
 
 The phases track, round 2 (2026-07-07), on behalf of snapshot-store —
