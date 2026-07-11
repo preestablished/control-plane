@@ -1,0 +1,20 @@
+[package]
+name = "determinism-proto"
+version = "0.0.1"
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["all"]
+all = ["scratch"]
+scratch = ["dep:prost", "dep:tonic", "dep:tonic-prost"]
+
+[dependencies]
+prost = { version = "0.14.4", optional = true }
+tonic = { version = "0.14.6", optional = true }
+tonic-prost = { version = "0.14.6", optional = true }
+
+[build-dependencies]
+prost-build = "0.14.4"
+protoc-bin-vendored = "3.2.0"
+tonic-prost-build = "0.14.6"

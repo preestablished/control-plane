@@ -551,6 +551,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "proto-descriptor-eq"
+version = "0.2.0"
+dependencies = [
+ "prost",
+ "prost-types",
+ "protoc-bin-vendored",
+ "tempfile",
+]
+
+[[package]]
 name = "protoc-bin-vendored"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

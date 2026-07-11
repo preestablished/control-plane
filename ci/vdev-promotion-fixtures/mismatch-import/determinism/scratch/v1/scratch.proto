@@ -1,0 +1,15 @@
+syntax = "proto3";
+package determinism.scratch.v1;
+import "shared/options.proto";
+enum ResultKind { RESULT_KIND_UNSPECIFIED = 0; RESULT_KIND_ACCEPTED = 1; }
+message PromoteRequest {
+  string value = 1;
+  optional string note = 2;
+  repeated bytes chunks = 3;
+  string cursor = 4;
+}
+message PromoteResponse { ResultKind kind = 1; }
+service ScratchService {
+  rpc Promote(PromoteRequest) returns (PromoteResponse);
+  rpc Watch(PromoteRequest) returns (stream PromoteResponse);
+}

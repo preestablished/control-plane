@@ -37,3 +37,7 @@ ignore path in the same change that freezes it.
 
 The first known consumer of this policy is
 `.agents/requests/phase4-snapstore-promotion-and-vdev-playbook/`.
+
+Use [`docs/vdev-promotion-playbook.md`](vdev-promotion-playbook.md) for the
+required owner handoff, two-release staging/freeze sequence, codegen migration,
+breaking-coverage proof, and consumer notification procedure.

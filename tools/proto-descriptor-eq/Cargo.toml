@@ -1,0 +1,12 @@
+[package]
+name = "proto-descriptor-eq"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+prost = "0.14.4"
+prost-types = "0.14"
+protoc-bin-vendored = "3.2.0"
+tempfile = "3"

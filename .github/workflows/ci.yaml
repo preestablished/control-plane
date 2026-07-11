@@ -21,6 +21,7 @@ jobs:
       - run: buf lint
       - run: scripts/buf-breaking-against.sh
       - run: scripts/check-buf-breaking-self-test.sh
+      - run: scripts/check-proto-descriptor-eq.sh
       - run: scripts/check-proto-version.sh
 
   rust:

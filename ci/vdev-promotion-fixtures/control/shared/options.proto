@@ -1,0 +1,6 @@
+syntax = "proto3";
+package determinism.scratch.shared.v1;
+
+message Cursor {
+  string token = 1;
+}

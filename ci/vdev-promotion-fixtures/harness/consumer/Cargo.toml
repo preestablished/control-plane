@@ -1,0 +1,10 @@
+[package]
+name = "scratch-consumer"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+determinism-proto = { path = "../crates/determinism-proto", default-features = false, features = ["scratch"] }
+prost = "0.14.4"
+tonic = "0.14.6"

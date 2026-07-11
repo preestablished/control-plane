@@ -1,0 +1,8 @@
+syntax = "proto3";
+package determinism.scratch.v1;
+
+message PromoteRequest {
+  string value = 1;
+}
+
+service ScratchService {}
