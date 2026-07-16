@@ -5,13 +5,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_INPUTSYNTH");
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_ORCHESTRATOR");
     println!("cargo:rerun-if-env-changed=CARGO_FEATURE_CONTROLPLANE");
+    println!("cargo:rerun-if-env-changed=CARGO_FEATURE_OBSERVATORY");
 
     let include_scorer = std::env::var_os("CARGO_FEATURE_SCORER").is_some();
     let include_inputsynth = std::env::var_os("CARGO_FEATURE_INPUTSYNTH").is_some();
     let include_orchestrator = std::env::var_os("CARGO_FEATURE_ORCHESTRATOR").is_some();
     let include_controlplane = std::env::var_os("CARGO_FEATURE_CONTROLPLANE").is_some();
+    let include_observatory = std::env::var_os("CARGO_FEATURE_OBSERVATORY").is_some();
 
-    if !include_scorer && !include_inputsynth && !include_orchestrator && !include_controlplane {
+    if !include_scorer
+        && !include_inputsynth
+        && !include_orchestrator
+        && !include_controlplane
+        && !include_observatory
+    {
         return Ok(());
     }
 
@@ -31,6 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 include_inputsynth,
                 include_orchestrator,
                 include_controlplane,
+                include_observatory,
             )?;
         }
         workspace_proto_root
@@ -50,6 +58,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     if include_controlplane {
         protos.push(proto_root.join("determinism/controlplane/v1/resources.proto"));
+    }
+    if include_observatory {
+        protos.push(proto_root.join("determinism/observatory/v1/events.proto"));
     }
 
     println!("cargo:rerun-if-changed={}", proto_root.display());
@@ -76,6 +87,7 @@ fn assert_proto_copies_match(
     include_inputsynth: bool,
     include_orchestrator: bool,
     include_controlplane: bool,
+    include_observatory: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut relative_paths = Vec::new();
     if include_scorer {
@@ -89,6 +101,9 @@ fn assert_proto_copies_match(
     }
     if include_controlplane {
         relative_paths.push("determinism/controlplane/v1/resources.proto");
+    }
+    if include_observatory {
+        relative_paths.push("determinism/observatory/v1/events.proto");
     }
 
     for relative_path in relative_paths {

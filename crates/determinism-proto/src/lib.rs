@@ -154,14 +154,7 @@ pub mod replay {
 #[cfg(feature = "observatory")]
 pub mod observatory {
     pub mod v1 {
-        #[derive(Clone, Debug, Default, PartialEq, Eq)]
-        pub struct EventEnvelope {
-            pub run_id: String,
-            pub seq: u64,
-            pub source_service: String,
-            pub event_type: String,
-            pub payload_json: String,
-        }
+        tonic::include_proto!("determinism.observatory.v1");
     }
 }
 

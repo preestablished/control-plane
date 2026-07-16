@@ -27,7 +27,7 @@ inputsynth = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 policy = ["inputsynth"]
 scorer = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 replay = ["common", "hypervisor"]
-observatory = ["common"]
+observatory = ["common", "dep:prost", "dep:tonic", "dep:tonic-prost"]
 controlplane = ["common", "dep:prost"]
 
 [dependencies]
