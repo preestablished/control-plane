@@ -31,8 +31,18 @@ lint:
       - proto/determinism/replay/v1/replay.proto
       - proto/determinism/scorer/v1/scorer.proto
       - proto/determinism/snapstore/v1/snapshot_store.proto
+    RPC_REQUEST_STANDARD_NAME:
+      # Owner-doc shapes (observatory API.md §1): the stream sends bare
+      # EventEnvelope and the bulk path sends EventBatch — no wrappers.
+      - proto/determinism/observatory/v1/events.proto
     RPC_RESPONSE_STANDARD_NAME:
       - proto/determinism/orchestrator/v1/orchestrator.proto
+      # Owner-doc shapes (observatory API.md §1): both RPCs return PublishAck.
+      - proto/determinism/observatory/v1/events.proto
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      # Owner-doc shapes (observatory API.md §1): stream + bulk deliberately
+      # share EventEnvelope/PublishAck.
+      - proto/determinism/observatory/v1/events.proto
 breaking:
   use:
     - FILE
