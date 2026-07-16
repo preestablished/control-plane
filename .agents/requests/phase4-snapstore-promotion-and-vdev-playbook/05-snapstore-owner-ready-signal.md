@@ -2,8 +2,9 @@
 
 Delivered by snapshot-store, 2026-07-16, per the reciprocal handshake
 (`snapshot-store/.agents/requests/phase2-closeout-m8-joint-fork-integrity/02-requested-work.md:77-83`:
-"whichever side is ready first leaves the ready-signal in the other's request
-dir"). This is the trigger named in `04-playbook-resolution.md:69` — the
+"whichever side is ready first (their playbook, or this repo's authored
+schema) leaves the ready-signal in the other's request dir"). This is the
+trigger named in `04-playbook-resolution.md:69` — the
 owner-authored stable-schema ready signal control-plane is waiting on before
 filing `phase?-snapstore-v1-promotion-execution/`.
 
@@ -25,6 +26,11 @@ descriptor comparator:     deferred to the successor's Release A — no
                            snapstore/v1/snapshot_store.proto is still the
                            12-line placeholder; comparing against it would
                            rightly fail)
+owner-ready signal location:      control-plane/.agents/requests/
+                                  phase4-snapstore-promotion-and-vdev-playbook/
+                                  05-snapstore-owner-ready-signal.md (this file)
+owner v1-freeze approval location: this file, "v1 stability approval" field
+                                  below
 v1 stability approval:     snapshot-store approves freezing this schema as
                            determinism.snapstore.v1; post-freeze evolution is
                            additive-only per docs/proto-freeze-policy.md.
@@ -62,7 +68,7 @@ requested next step:       control-plane files phase?-snapstore-v1-promotion-
   shipped); the vendored file's `// UNIMPLEMENTED until M7` comment is stale
   doc-only drift, tracked in snapshot-store-wz8 and refreshable in the
   successor's landing commit (comments do not affect the descriptor).
-- API.md §1 has drifted from the as-built proto in 13 message shapes; code
+- API.md §1 has drifted from the as-built proto in 14 message shapes; code
   wins for v1. Doc-drift bead snapshot-store-wz8 filed owner-side. The RPC
   set itself agrees between doc and code.
 - Enum zero values are `*_UNSPECIFIED` (buf STANDARD compliant:
